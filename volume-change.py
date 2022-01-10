@@ -15,7 +15,7 @@ import re
 from subprocess import getoutput, call
 
 volRegex = re.compile('.*\/\s+(?P<vol>\d+)%.*')
-currentVolume = int(volRegex.match(getoutput('pactl get-sink-volume 0')).group('vol'))
+currentVolume = int(volRegex.match(getoutput('pactl get-sink-volume @DEFAULT_SINK@')).group('vol'))
 
 amount = int(sys.argv[1])
 
@@ -24,11 +24,17 @@ if currentVolume == 100 and amount > 0:
 elif currentVolume == 0 and amount < 0:
     exit()
 
-change = f"+{amount}%" if amount > 0 else f"{amount}%"
-
-call(f"pactl set-sink-volume 0 {change}", shell=True)
-
 newVolume = currentVolume + amount
+
+if newVolume > 100:
+    newVolume = 100
+elif newVolume < 0:
+    newVolume = 0
+
+if newVolume != currentVolume:
+    change = f"+{amount}%" if amount > 0 else f"{amount}%"
+    call(f"pactl set-sink-volume @DEFAULT_SINK@ {change}", shell=True)
+
 
 # Getting the dbus interface to communicate with Cinnamon's OSD
 sessionBus = dbus.SessionBus()
