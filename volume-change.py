@@ -26,14 +26,14 @@ elif currentVolume == 0 and amount < 0:
 
 newVolume = currentVolume + amount
 
-if newVolume > 100:
-    newVolume = 100
+if newVolume >= 98:
+    # workaround for weird issue where setting volumes >= 98% just jumps to 100%
+    newVolume = 100 if amount > 0 else 96
 elif newVolume < 0:
     newVolume = 0
 
 if newVolume != currentVolume:
-    change = f"+{amount}%" if amount > 0 else f"{amount}%"
-    call(f"pactl set-sink-volume @DEFAULT_SINK@ {change}", shell=True)
+    call(f"pactl set-sink-volume @DEFAULT_SINK@ {newVolume}%", shell=True)
 
 
 # Getting the dbus interface to communicate with Cinnamon's OSD
